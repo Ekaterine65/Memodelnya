@@ -33,6 +33,8 @@ class User(Base, UserMixin):
     password_hash: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     role_id: Mapped[int] = mapped_column(default=1)
+    status: Mapped[int] = mapped_column(default=0)
+    unlocked_at: Mapped[Optional[datetime]]
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -54,8 +56,6 @@ class Image(Base):
     file_name: Mapped[str] = mapped_column(String(100))
     mime_type: Mapped[str] = mapped_column(String(100))
     md5_hash: Mapped[str] = mapped_column(String(100), unique=True)
-    object_id: Mapped[Optional[int]]
-    object_type: Mapped[Optional[str]] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
     def __repr__(self):
@@ -82,11 +82,13 @@ class Post(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    title: Mapped[str] = mapped_column(String(100))
-    body: Mapped[str] = mapped_column(Text)
+    title: Mapped[str] = mapped_column(Text)
+    background_image_id: Mapped[str] = mapped_column(ForeignKey("images.id"))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+    status: Mapped[int] = mapped_column(default=0)
 
     author: Mapped["User"] = relationship()
+    bg_image: Mapped["Image"] = relationship()
 
     def __repr__(self):
         return '<Post %r>' % self.title

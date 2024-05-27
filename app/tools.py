@@ -3,28 +3,9 @@ import uuid
 import os
 from werkzeug.utils import secure_filename
 from flask import current_app
-from models import db, Course, Image
-
-class CoursesFilter:
-    def __init__(self, name, category_ids):
-        self.name = name
-        self.category_ids = category_ids
-        self.query = db.select(Course)
-
-    def perform(self):
-        self.__filter_by_name()
-        self.__filter_by_category_ids()
-        return self.query.order_by(Course.created_at.desc())
-
-    def __filter_by_name(self):
-        if self.name:
-            self.query = self.query.filter(
-                Course.name.ilike('%' + self.name + '%'))
-
-    def __filter_by_category_ids(self):
-        if self.category_ids:
-            self.query = self.query.filter(
-                Course.category_id.in_(self.category_ids))
+from models import db, Image, Post
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, validators
 
 class ImageSaver:
     def __init__(self, file):
@@ -51,3 +32,39 @@ class ImageSaver:
         self.md5_hash = hashlib.md5(self.file.read()).hexdigest()
         self.file.seek(0)
         return db.session.execute(db.select(Image).filter(Image.md5_hash == self.md5_hash)).scalar()
+
+class PostsFilter:
+    def __init__(self, search='', only_subscriptions=False):
+        self.search = search
+        self.only_subscriptions = only_subscriptions
+
+    def perform(self):
+        query = db.session.query(Post).order_by(Post.created_at.desc())
+        if self.search:
+            query = query.filter(Post.title.ilike(f"%{self.search}%"))
+        # Если нужно фильтровать только подписки, добавьте соответствующую логику здесь
+        # if self.only_subscriptions:
+        #     query = query.filter(...)  # Логика для фильтрации подписок
+        return query
+
+class RegistrationForm(FlaskForm):
+    login = StringField('Логин', [
+        validators.DataRequired(message="Поле обязательно для заполнения"),
+        validators.Length(min=4, max=25, message="Логин должен быть от 4 до 25 символов")
+    ])
+    first_name = StringField('Имя', [
+        validators.DataRequired(message="Поле обязательно для заполнения"),
+        validators.Length(min=1, max=100, message="Имя должно быть не длиннее 100 символов")
+    ])
+    last_name = StringField('Фамилия', [
+        validators.DataRequired(message="Поле обязательно для заполнения"),
+        validators.Length(min=1, max=100, message="Фамилия должна быть не длиннее 100 символов")
+    ])
+    password = PasswordField('Пароль', [
+        validators.DataRequired(message="Поле обязательно для заполнения"),
+        validators.EqualTo('confirm_password', message='Пароли должны совпадать'),
+        validators.Length(min=6, message="Пароль должен быть не короче 6 символов")
+    ])
+    confirm_password = PasswordField('Подтвердите пароль', [
+        validators.DataRequired(message="Поле обязательно для заполнения")
+    ])

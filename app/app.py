@@ -3,7 +3,7 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import SQLAlchemyError
 from models import db, Image
 from auth import bp as auth_bp, init_login_manager
-#from courses import bp as courses_bp
+from posts import bp as posts_bp
 
 app = Flask(__name__)
 application = app
@@ -22,7 +22,7 @@ def handle_sqlalchemy_error(err):
     return f'{error_msg} (Подробнее: {err})', 500
 
 app.register_blueprint(auth_bp)
-#app.register_blueprint(courses_bp)
+app.register_blueprint(posts_bp)
 
 @app.route('/')
 def index():

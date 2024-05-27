@@ -7,6 +7,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
@@ -17,47 +18,90 @@
     <header>
         <nav class="navbar navbar-dark bg-dark">
             <div class="container-fluid">
-                <div class="logo navbar-brand">
-                    <a href="{{ url_for('index') }}">
-                        <img class="img-fluid w-50" src="{{ url_for('static', filename='images/internet-meme1.png') }}" alt="polytech-logo">
+                <div class="d-flex align-items-center">
+                    <a class="navbar-brand" href="{{ url_for('index') }}">
+                        <img class="img-fluid" src="{{ url_for('static', filename='images/internet-meme2.png') }}"
+                            alt="Logo" width="60" height="24" class="d-inline-block align-text-top"> Мемодельня
                     </a>
                 </div>
                 {% if current_user.is_authenticated %}
-                    <div class="dropdown d-flex" style="width: 200px;">
-                        <div class="profile ms-auto" title="{{ current_user.full_name }}" id="dropdownMenuButton" data-bs-toggle="dropdown"
-                            aria-haspopup="true" aria-expanded="false">
+                <div class="d-flex align-items-center ms-auto">
+                    <button class="btn btn-outline-light me-2" type="button" data-bs-toggle="modal"
+                        data-bs-target="#createPostModal">+ Создать мем</button>
+
+                    <div class="btn-group dropstart">
+                        <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <img class="img-fluid rounded-circle cursor-pointer"
-                                src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}" alt="profile-pic">
+                                src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}"
+                                alt="profile-pic" width="60">
                         </div>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">Профиль</a>
-                            <a class="dropdown-item" href="#">Мои курсы</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выйти</a>
-                        </div>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Профиль</a></li>
+                            <li><a class="dropdown-item" href="#">Лента мемов</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выйти</a></li>
+                        </ul>
                     </div>
+
+
+                </div>
                 {% else %}
-                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">Войти</a>
+                <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}">Войти</a>
                 {% endif %}
             </div>
         </nav>
     </header>
-        
+
     <div class="alerts-area">
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, msg in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show m-0 rounded-0" role="alert">
-                    {{ msg }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
+        {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show m-0 rounded-0" role="alert">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
         {% endwith %}
     </div>
 
     <main class="main flex-grow-1">
-       {% block content %}
-       {% endblock %}
+        {% block content %}
+        {% endblock %}
     </main>
+    <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createPostModalLabel">Создать пост</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createPostForm" action="{{ url_for('posts.create') }}" method="POST" enctype="multipart/form-data">
+                        <div class="col-md-6 d-flex flex-column">
+                            <div class="mb-3">
+                                <label for="background_img">Фоновое изображение</label>
+                                <input class="form-control" type="file" name="background_img" id="background_img">
+                            </div>
+                            <div class="mb-3 background-preview p-3 rounded d-flex align-items-center justify-content-center">
+                                <img src="#" class="img-fluid d-none" alt="">
+                                <label for="background_img" class="btn btn-dark">Выбрать изображение</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="postDescription" class="form-label">Описание</label>
+                            <textarea class="form-control" id="postDescription" name="description" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+                    <button type="submit" form="createPostForm" class="btn btn-primary">Создать</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
