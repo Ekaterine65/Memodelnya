@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import LoginManager, login_user, logout_user, login_required
-from models import db, User
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from models import db, User, Post
 from tools import RegistrationForm
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')

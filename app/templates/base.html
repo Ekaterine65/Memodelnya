@@ -32,12 +32,17 @@
                     <div class="btn-group dropstart">
                         <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <img class="img-fluid rounded-circle cursor-pointer"
-                                src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}"
+                            {% if user.avatar %}
+                                src="{{ user.avatar.url }}"
+                            {% else %}
+                                src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}" 
+                            {% endif%} 
+                                
                                 alt="profile-pic" width="60">
                         </div>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Профиль</a></li>
-                            <li><a class="dropdown-item" href="#">Лента мемов</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('profile.index') }}">Профиль</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('posts.index') }}">Лента мемов</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>

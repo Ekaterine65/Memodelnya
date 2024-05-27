@@ -35,6 +35,11 @@ class User(Base, UserMixin):
     role_id: Mapped[int] = mapped_column(default=1)
     status: Mapped[int] = mapped_column(default=0)
     unlocked_at: Mapped[Optional[datetime]]
+    avatar_id: Mapped[Optional[str]] = mapped_column(ForeignKey("images.id"))
+
+    posts: Mapped[List["Post"]] = relationship(back_populates='author')
+    user_likes: Mapped[List["Like"]] = relationship(back_populates="user")
+    avatar: Mapped[Optional["Image"]] = relationship()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -87,7 +92,8 @@ class Post(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     status: Mapped[int] = mapped_column(default=0)
 
-    author: Mapped["User"] = relationship()
+    post_likes: Mapped[List["Like"]] = relationship(back_populates="post")
+    author: Mapped["User"] = relationship(back_populates='posts')
     bg_image: Mapped["Image"] = relationship()
 
     def __repr__(self):
@@ -102,8 +108,8 @@ class Like(Base):
     post_id: Mapped[int] = mapped_column(ForeignKey("posts.id"))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    user: Mapped["User"] = relationship()
-    post: Mapped["Post"] = relationship()
+    user: Mapped["User"] = relationship(back_populates="user_likes")
+    post: Mapped["Post"] = relationship(back_populates="post_likes")
 
     def __repr__(self):
         return '<Like %r>' % self.id

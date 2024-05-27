@@ -3,7 +3,7 @@ import uuid
 import os
 from werkzeug.utils import secure_filename
 from flask import current_app
-from models import db, Image, Post
+from models import db, Image, Post, User
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, validators
 
@@ -34,18 +34,20 @@ class ImageSaver:
         return db.session.execute(db.select(Image).filter(Image.md5_hash == self.md5_hash)).scalar()
 
 class PostsFilter:
-    def __init__(self, search='', only_subscriptions=False):
+    def __init__(self, search='', only_subscriptions=False, user_id=None):
         self.search = search
         self.only_subscriptions = only_subscriptions
+        self.user_id = user_id
 
     def perform(self):
         query = db.session.query(Post).order_by(Post.created_at.desc())
         if self.search:
             query = query.filter(Post.title.ilike(f"%{self.search}%"))
-        # Если нужно фильтровать только подписки, добавьте соответствующую логику здесь
-        # if self.only_subscriptions:
-        #     query = query.filter(...)  # Логика для фильтрации подписок
+        
+        if self.only_subscriptions and self.user_id:
+            query = query.join(Post.author).filter(User.followers.any(id=self.user_id))
         return query
+
 
 class RegistrationForm(FlaskForm):
     login = StringField('Логин', [
@@ -68,3 +70,26 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Подтвердите пароль', [
         validators.DataRequired(message="Поле обязательно для заполнения")
     ])
+
+class EditProfileForm(FlaskForm):
+    login = StringField('Логин', [
+        validators.Length(min=4, max=25, message="Логин должен быть от 4 до 25 символов")
+    ])
+    first_name = StringField('Имя', [
+        validators.Length(min=1, max=100, message="Имя должно быть не длиннее 100 символов")
+    ])
+    last_name = StringField('Фамилия', [
+        validators.Length(min=1, max=100, message="Фамилия должна быть не длиннее 100 символов")
+    ])
+    password = PasswordField('Пароль', [
+        validators.Optional(),
+        validators.Length(min=6, message="Пароль должен быть не короче 6 символов")
+    ])
+    
+    confirm_password = PasswordField('Подтвердите пароль', [ 
+        validators.EqualTo('password', message='Пароли должны совпадать')
+    ])
+
+    def validate_confirm_password(self, field):
+        if self.password.data and not field.data:
+            raise validators.ValidationError('Поле подтверждения пароля обязательно при установке пароля.')

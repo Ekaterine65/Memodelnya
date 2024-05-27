@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mt-4">
+        <!-- User Card -->
+        <div class="col-md-3">
+            <div class="card border mb-3 text-center">
+                <div class="flex-shrink-0">
+                    <img 
+                    {% if user.avatar %}
+                        src="{{ user.avatar.url }}"
+                    {% else %}
+                        src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}" 
+                    {% endif%} 
+                        class="card-img-top img-fluid rounded-circle" alt="User Avatar"
+                        style="width: 150px; height: 150px; margin: 10px auto;">
+
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ user.full_name }}</h5>
+                    <p class="card-text"><small class="text-muted">@{{ user.login }}</small></p>
+                    <div class="card-text container">
+                        <div class="row">
+                            <p class="col-6">Followers</p>
+                            <p class="col-6">{{ user.followers|length }}</p>
+                        </div>
+                        <div class="row">
+                            <p class="col-6">Following</p>
+                            <p class="col-6">{{ user.followed|length }}</p>                       
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('profile.edit') }}" class="btn btn-primary">Редактировать аккаунт</a>
+                        <button class="btn btn-secondary" data-bs-toggle="modal"
+                            data-bs-target="#deleteAccountModal">Удалить аккаунт</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts -->
+        <div class="col-md-9">
+            <div class="row">
+                {% for post in posts %}
+                <div class="col-md-6 d-flex">
+                    <div class="card mb-4" style="width: 100%;">
+                        <div class="aspect-ratio-box">
+                            <img class="card-img-top aspect-ratio-box-inner" src="{{ post.bg_image.url }}"
+                                alt="Card image cap">
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h2 class="card-title">{{ post.title }}</h2>
+                            <p class="card-text flex-grow-1 ">
+                                {{ post.description | truncate(100) }}
+                            </p>
+                            <a href="#" class="btn btn-primary">Читать дальше &rarr;</a>
+                        </div>
+                        <div class="card-footer text-muted">
+                            Опубликовано {{ post.created_at.strftime('%d.%m.%Y') }}.
+                            Автор: {{ post.author.full_name }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAccountModalLabel">Удалить аккаунт</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Вы действительно хотите удалить свой аккаунт? Это действие необратимо.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <a href="{{ url_for('profile.delete') }}" class="btn btn-danger">Удалить</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

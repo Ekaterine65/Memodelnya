@@ -30,6 +30,10 @@ window.onload = function() {
     if (background_img_field) {
         background_img_field.onchange = imagePreviewHandler;
     }
+    let avatar_img_field = document.getElementById('avatar');
+    if (avatar_img_field) {
+        avatar_img_field.onchange = imagePreviewHandler;
+    }
     for (let course_elm of document.querySelectorAll('.courses-list .row')) {
         course_elm.onclick = openLink;
     }

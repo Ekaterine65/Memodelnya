@@ -4,6 +4,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from models import db, Image
 from auth import bp as auth_bp, init_login_manager
 from posts import bp as posts_bp
+from profile import bp as profile_bp
+from flask import g
+from flask_login import current_user
 
 app = Flask(__name__)
 application = app
@@ -21,8 +24,13 @@ def handle_sqlalchemy_error(err):
                  'Повторите попытку позже.')
     return f'{error_msg} (Подробнее: {err})', 500
 
+@app.context_processor
+def inject_user():
+    return dict(user=current_user)
+
 app.register_blueprint(auth_bp)
 app.register_blueprint(posts_bp)
+app.register_blueprint(profile_bp)
 
 @app.route('/')
 def index():
