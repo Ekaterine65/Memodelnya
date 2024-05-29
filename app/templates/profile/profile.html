@@ -8,10 +8,9 @@
             <div class="card border mb-3 text-center">
                 <div class="flex-shrink-0">
                     <img {% if user.avatar %} src="{{ user.avatar.url }}" {% else %}
-                        src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}" {% endif%}
+                        src="{{ url_for('static', filename='images/default-profile-picture-300x300.jpeg') }}" {% endif %}
                         class="card-img-top img-fluid rounded-circle" alt="User Avatar"
                         style="width: 150px; height: 150px; margin: 10px auto;">
-
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">{{ user.full_name }}</h5>
@@ -34,7 +33,6 @@
                 </div>
             </div>
         </div>
-
 
         <!-- Posts -->
         <div class="col-md-9">
@@ -67,8 +65,8 @@
                                 {{ post.description | truncate(100) }}
                             </p>
                             {% if post.status == 0 %}
-                            <a href="#" class="btn btn-primary">Редактировать &rarr;</a>
-                            <a href="#" class="btn btn-primary">Удалить &rarr;</a>
+                            <a href="{{ url_for('profile.edit_post', post_id=post.id) }}" class="btn btn-primary">Редактировать &rarr;</a>
+                            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#deletePostModal-{{ post.id }}">Удалить &rarr;</button>
                             {% endif %}
                         </div>
                         <div class="card-footer text-muted">
@@ -78,6 +76,24 @@
                     </div>
                 </div>
 
+                <!-- Delete Post Modal -->
+                <div class="modal fade" id="deletePostModal-{{ post.id }}" tabindex="-1" aria-labelledby="deletePostModalLabel-{{ post.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deletePostModalLabel-{{ post.id }}">Удалить пост</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Вы уверены, что хотите удалить этот пост?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                <a href="{{ url_for('profile.delete_post', post_id=post.id) }}" class="btn btn-danger">Удалить</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -103,5 +119,4 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
