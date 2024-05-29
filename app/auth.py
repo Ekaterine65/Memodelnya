@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from models import db, User, Post
 from tools import RegistrationForm
+from config import ADMIN_ROLE
+from datetime import datetime
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -24,11 +26,21 @@ def login():
         password = request.form.get('password')
         if login and password:
             user = db.session.execute(db.select(User).filter_by(login=login)).scalar()
-            if user and user.check_password(password):
-                login_user(user)
-                flash('Вы успешно аутентифицированы.', 'success')
-                next = request.args.get('next')
-                return redirect(next or url_for('posts.index'))
+            if user:
+                if user.status == 1 and user.unlocked_at and user.unlocked_at <= datetime.now():
+                    user.status = 0
+                    user.unlocked_at = None
+                    db.session.commit()
+                    flash('Ваш аккаунт был разблокирован.', 'success')
+
+                if user.check_password(password):
+                    login_user(user)
+                    flash('Вы успешно аутентифицированы.', 'success')
+                    next = request.args.get('next')
+                    if user.role_id == ADMIN_ROLE:
+                        return redirect(next or url_for('posts.admin'))
+                    else:
+                        return redirect(next or url_for('posts.index'))
         flash('Введены неверные логин и/или пароль.', 'danger')
     return render_template('auth/login.html')
 

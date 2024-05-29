@@ -40,12 +40,14 @@ class PostsFilter:
         self.user_id = user_id
 
     def perform(self):
-        query = db.session.query(Post).order_by(Post.created_at.desc())
+        query = db.session.query(Post).filter(Post.status == 0)
         if self.search:
             query = query.filter(Post.title.ilike(f"%{self.search}%"))
         
         if self.only_subscriptions and self.user_id:
             query = query.join(Post.author).filter(User.followers.any(id=self.user_id))
+        
+        query = query.order_by(Post.created_at.desc())
         return query
 
 

@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from models import db, Post, User, Like
 from tools import ImageSaver, PostsFilter
 from sqlalchemy.orm import joinedload
+from datetime import datetime, timedelta
 
 bp = Blueprint('posts', __name__, url_prefix='/posts')
 
@@ -41,6 +42,21 @@ def index():
                            posts=posts,
                            pagination=pagination,
                            search_params=search_params)
+
+@bp.route('/admin')
+def admin():
+    user_id = current_user.id if current_user.is_authenticated else None
+    
+    posts_query = db.session.query(Post)
+    posts_query = posts_query.filter(Post.status == '1')
+    posts_query = posts_query.options(joinedload(Post.author))
+    pagination = db.paginate(posts_query)
+    posts = pagination.items
+
+    return render_template('posts/admin.html',
+                           posts=posts,
+                           pagination=pagination)
+
 
 
 @bp.route('/create', methods=['POST'])
@@ -109,3 +125,50 @@ def like(post_id):
     
     return redirect(url_for('posts.index'))
 
+@bp.route('/report/<int:post_id>', methods=['GET','POST'])
+@login_required
+def report(post_id):
+    post = db.session.execute(db.select(Post).filter_by(id=post_id)).scalar()
+    if post:
+        post.status = 1
+        db.session.add(post)
+        db.session.commit()
+    return redirect(url_for('posts.index'))
+
+
+@bp.route('/post_policy/<int:post_id>', methods=['POST'])
+@login_required
+def post_policy(post_id):
+    post = db.session.execute(db.select(Post).filter_by(id=post_id)).scalar()
+    if not post:
+        return redirect(url_for('posts.index'))
+
+    action = request.form.get('action')
+
+    if action == '1':
+        post.status = 0
+        db.session.add(post)
+    elif action == '2':
+        post.author.status = 1
+        post.author.unlocked_at = datetime.now() + timedelta(weeks=1)
+        post.status = 2
+        db.session.add(post)
+        db.session.add(post.author)
+    elif action == '3':
+        post.author.status = 1
+        post.author.unlocked_at = datetime.now() + timedelta(days=30)
+        post.status = 2
+        db.session.add(post)
+        db.session.add(post.author)
+    elif action == '4':
+        post.author.status = 2
+        post.status = 2
+        db.session.add(post)
+        db.session.add(post.author)
+    else:
+        flash('Ошибка при применении политики', 'success')
+        return redirect(url_for('posts.admin'))
+
+    db.session.commit()
+    flash('Политика успешно применена', 'success')
+    return redirect(url_for('posts.admin'))

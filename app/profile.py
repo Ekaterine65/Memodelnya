@@ -18,11 +18,12 @@ def index():
 def edit():
     form = EditProfileForm()
     if form.validate_on_submit():
-        # Обработка отправки формы редактирования профиля
+        
         current_user.login = form.login.data
         current_user.first_name = form.first_name.data
         current_user.last_name = form.last_name.data
-        current_user.set_password(form.password.data)
+        if form.password.data:
+            current_user.set_password(form.password.data)
 
         f = request.files.get('avatar')
         #flash(f'{f}', 'success')
@@ -43,7 +44,6 @@ def edit():
     elif request.method == 'POST':
         flash('Исправьте ошибки в форме', 'danger')
     else:
-        # Заполнение формы текущими данными пользователя
         form.login.data = current_user.login
         form.first_name.data = current_user.first_name
         form.last_name.data = current_user.last_name

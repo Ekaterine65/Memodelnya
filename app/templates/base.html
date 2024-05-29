@@ -26,9 +26,10 @@
                 </div>
                 {% if current_user.is_authenticated %}
                 <div class="d-flex align-items-center ms-auto">
+                    {% if current_user.role_id != config.ADMIN_ROLE and current_user.status == 0 %}
                     <button class="btn btn-outline-light me-2" type="button" data-bs-toggle="modal"
-                        data-bs-target="#createPostModal">+ Создать мем</button>
-
+                        data-bs-target="#createPostModal">+ Создать мем </button>
+                    {% endif %}
                     <div class="btn-group dropstart">
                         <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <img class="img-fluid rounded-circle cursor-pointer"
@@ -42,7 +43,11 @@
                         </div>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('profile.index') }}">Профиль</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('posts.index') }}">Лента мемов</a></li>
+                            {% if current_user.role_id == config.ADMIN_ROLE %}
+                                <li><a class="dropdown-item" href="{{ url_for('posts.admin') }}">Лента админа</a></li>
+                            {% else %}
+                                <li><a class="dropdown-item" href="{{ url_for('posts.index') }}">Лента мемов</a></li>
+                            {% endif %}
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
