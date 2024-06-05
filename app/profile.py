@@ -72,14 +72,20 @@ def delete():
     return redirect(url_for('index'))
 
 @bp.route('/delete_post/<int:post_id>', methods=['GET','POST'])
+@login_required
 def delete_post(post_id):
     post = db.session.execute(db.select(Post).filter_by(id=post_id)).scalar()
-    db.session.delete(post)
-    db.session.commit()
-    flash('Пост успешно удален!', 'success')
-    return redirect(url_for('profile.index'))
+    if current_user.status == 0 and post.user_id == current_user.id:
+        db.session.delete(post)
+        db.session.commit()
+        flash('Пост успешно удален!', 'success')
+        return redirect(url_for('profile.index'))
+    else:
+        flash('Вы не можете удалить этот пост', 'danger')
+        return redirect(url_for('profile.index'))
 
 @bp.route('/edit_post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
 def edit_post(post_id):
     post = db.get_or_404(Post, post_id)
 
@@ -101,10 +107,10 @@ def edit_post(post_id):
             flash(f'Возникла ошибка при записи данных в БД. Проверьте корректность введённых данных. ({err})', 'danger')
             db.session.rollback()
 
-    # Prepare the form data for rendering the template
-    form_data = {
-        'title': post.title,
-        'background_img': post.background_image_id  # Assuming the form needs the image ID or path
-    }
+    if current_user.status == 0 and post.user_id == current_user.id:
 
-    return render_template('profile/edit_post.html', form=form_data, post=post)
+        return render_template('profile/edit_post.html', post=post)
+    else:
+        flash('Вы не можете редактировать этот пост', 'danger')
+        return redirect(url_for('profile.index'))
+ # type: ignore

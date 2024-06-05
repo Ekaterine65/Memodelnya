@@ -5,6 +5,7 @@ from models import db, Post, User, Like
 from tools import ImageSaver, PostsFilter
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
+from config import ADMIN_ROLE
 
 bp = Blueprint('posts', __name__, url_prefix='/posts')
 
@@ -44,18 +45,23 @@ def index():
                            search_params=search_params)
 
 @bp.route('/admin')
+@login_required
 def admin():
-    user_id = current_user.id if current_user.is_authenticated else None
-    
-    posts_query = db.session.query(Post)
-    posts_query = posts_query.filter(Post.status == '1')
-    posts_query = posts_query.options(joinedload(Post.author))
-    pagination = db.paginate(posts_query)
-    posts = pagination.items
+    if current_user.role_id == ADMIN_ROLE:
+        user_id = current_user.id if current_user.is_authenticated else None
+        
+        posts_query = db.session.query(Post)
+        posts_query = posts_query.filter(Post.status == '1')
+        posts_query = posts_query.options(joinedload(Post.author))
+        pagination = db.paginate(posts_query)
+        posts = pagination.items
 
-    return render_template('posts/admin.html',
-                           posts=posts,
-                           pagination=pagination)
+        return render_template('posts/admin.html',
+                            posts=posts,
+                            pagination=pagination)
+    else:
+        flash('Доступ к этой странице запрещен', 'danger')
+        return redirect(url_for('posts.index'))
 
 
 

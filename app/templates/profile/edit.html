@@ -2,7 +2,8 @@
 
 {% block content %}
 <div class="d-flex h-100 bg-light">
-    <form class="container-fluid m-auto bg-white p-5 border rounded" method="POST" enctype="multipart/form-data" style="max-width: 30rem;">
+    <form class="container-fluid m-auto bg-white p-5 border rounded" method="POST" enctype="multipart/form-data"
+        style="max-width: 30rem;">
         {{ form.csrf_token }}
         <div class="col-md-6 d-flex flex-column">
             <div class="mb-3">
@@ -10,8 +11,12 @@
                 <input class="form-control" type="file" name="avatar" id="avatar">
             </div>
             <div class="mb-3 background-preview p-3 rounded d-flex align-items-center justify-content-center">
+                {% if current_user.avatar is not none %}
+                <img src="{{ current_user.avatar.url }}" class="img-fluid" alt="Текущая аватарка">
+                {% else %}
                 <img src="#" class="img-fluid d-none" alt="">
                 <label for="avatar" class="btn btn-dark">Выбрать изображение</label>
+                {% endif %}
             </div>
         </div>
         <div class="form-floating mb-3">
